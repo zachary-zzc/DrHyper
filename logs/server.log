@@ -1,0 +1,403 @@
+2025-08-03 00:05:16,317 - EntityGraph - ERROR - Failed to parse entity response: Expecting value: line 1 column 1 (char 0)
+2025-08-03 00:08:32,166 - EntityGraph - ERROR - response.content: ```json
+{
+  "endpoint": true,
+  "entities": [
+    "date_of_first_elevated_blood_pressure_discovery",
+    "highest_historical_systolic_blood_pressure",
+    "highest_historical_diastolic_blood_pressure",
+    "previous_antihypertensive_medications_name",
+    "previous_antihypertensive_medications_frequency",
+    "previous_antihypertensive_medications_dosage",
+    "previous_antihypertensive_medications_duration",
+    "previous_antihypertensive_medications_adverse_effects",
+    "previous_antihypertensive_medications_discontinuation_reason",
+    "historical_systolic_blood_pressure_range",
+    "historical_diastolic_blood_pressure_range",
+    "method_of_first_elevated_blood_pressure_discovery",
+    "initial_systolic_blood_pressure_reading",
+    "initial_diastolic_blood_pressure_reading",
+    "secondary_hypertension_screening_results",
+    "usual_systolic_blood_pressure_range",
+    "usual_diastolic_blood_pressure_range",
+    "current_home_systolic_blood_pressure",
+    "current_home_diastolic_blood_pressure",
+    "current_home_heart_rate",
+    "current_antihypertensive_medications_name",
+    "current_antihypertensive_medications_frequency",
+    "current_antihypertensive_medications_dosage",
+    "current_antihypertensive_medications_duration",
+    "symptoms_during_blood_pressure_elevation_headache",
+    "symptoms_during_blood_pressure_elevation_dizziness",
+    "symptoms_during_blood_pressure_elevation_palpitations",
+    "symptoms_during_blood_pressure_elevation_sweating",
+    "symptoms_during_blood_pressure_elevation_blurred_vision",
+    "regular_symptoms_dizziness",
+    "regular_symptoms_palpitations",
+    "regular_symptoms_chest_tightness",
+    "regular_symptoms_shortness_of_breath",
+    "regular_symptoms_chest_pain",
+    "regular_symptoms_intermittent_claudication",
+    "regular_symptoms_lower_limb_weakness",
+    "regular_symptoms_lower_limb_edema",
+    "regular_symptoms_increased_nocturnal_urination",
+    "regular_symptoms_facial_edema",
+    "regular_symptoms_hematuria",
+    "regular_symptoms_proteinuria",
+    "history_of_cardiovascular_risk_factors_elevated_blood_glucose",
+    "history_of_cardiovascular_risk_factors_diabetes",
+    "history_of_cardiovascular_risk_factors_hyperlipidemia",
+    "history_of_cardiovascular_risk_factors_hyperuricemia",
+    "history_of_cardiovascular_risk_factors_gout",
+    "history_of_cardiovascular_risk_factors_renal_dysfunction",
+    "history_of_cardiovascular_risk_factors_thyroid_dysfunction",
+    "history_of_cardiovascular_risk_factors_long_term_bp_affecting_medication_use",
+    "history_of_cardiovascular_complications_cerebral_hemorrhage",
+    "history_of_cardiovascular_complications_cerebral_infarction",
+    "history_of_cardiovascular_complications_transient_ischemic_attack",
+    "history_of_cardiovascular_complications_coronary_heart_disease",
+    "history_of_cardiovascular_complications_myocardial_infarction",
+    "history_of_cardiovascular_complications_heart_failure",
+    "history_of_cardiovascular_complications_atrial_fibrillation",
+    "history_of_cardiovascular_complications_peripheral_vascular_disease",
+    "recent_psychological_stress_work_pressure",
+    "recent_psychological_stress_family_issues",
+    "sleep_problems_quality",
+    "sleep_problems_sleeping_pill_usage",
+    "sleep_problems_snoring",
+    "sleep_problems_sleep_apnea",
+    "smoking_habits_years_smoked",
+    "smoking_habits_daily_consumption",
+    "alcohol_consumption_years_drinking",
+    "alcohol_consumption_daily_consumption",
+    "family_history_of_cardiovascular_diseases_hypertension",
+    "family_history_of_cardiovascular_diseases_coronary_heart_disease",
+    "family_history_of_cardiovascular_diseases_cerebral_infarction",
+    "family_history_of_cardiovascular_diseases_cerebral_hemorrhage",
+    "family_history_of_cardiovascular_diseases_diabetes",
+    "family_history_of_cardiovascular_diseases_hyperlipidemia",
+    "family_history_of_cardiovascular_diseases_gout",
+    "family_history_of_cardiovascular_diseases_kidney_disease",
+    "family_history_first_degree_relative_age_of_occurrence",
+    "current_body_mass_index_height",
+    "current_body_mass_index_weight",
+    "current_body_mass_index_waist_circumference",
+    "ecg_examination_history_results",
+    "cardiac_ultrasound_examination_history_results",
+    "carotid_ultrasound_examination_history_results"
+  ]
+}
+```
+2025-08-03 00:08:32,169 - EntityGraph - ERROR - Failed to parse entity response: Expecting value: line 1 column 1 (char 0)
+2025-08-03 00:43:46,350 - EntityGraph - ERROR - response.content: ```json
+{
+  "endpoint": true,
+  "entities": [
+    "date_of_first_elevated_blood_pressure_discovery",
+    "highest_historical_systolic_blood_pressure",
+    "highest_historical_diastolic_blood_pressure",
+    "previous_antihypertensive_medications_name",
+    "previous_antihypertensive_medications_frequency",
+    "previous_antihypertensive_medications_dosage",
+    "previous_antihypertensive_medications_duration",
+    "previous_antihypertensive_medications_adverse_effects",
+    "previous_antihypertensive_medications_discontinuation_history",
+    "previous_antihypertensive_medications_adjustments",
+    "historical_systolic_blood_pressure_range",
+    "historical_diastolic_blood_pressure_range",
+    "method_of_elevated_blood_pressure_discovery",
+    "initial_systolic_blood_pressure_reading",
+    "initial_diastolic_blood_pressure_reading",
+    "secondary_hypertension_screening_results",
+    "usual_systolic_blood_pressure_range",
+    "usual_diastolic_blood_pressure_range",
+    "current_home_systolic_blood_pressure",
+    "current_home_diastolic_blood_pressure",
+    "current_home_heart_rate",
+    "current_antihypertensive_medications_name",
+    "current_antihypertensive_medications_frequency",
+    "current_antihypertensive_medications_dosage",
+    "current_antihypertensive_medications_duration",
+    "symptoms_during_blood_pressure_elevation_headache",
+    "symptoms_during_blood_pressure_elevation_dizziness",
+    "symptoms_during_blood_pressure_elevation_palpitations",
+    "symptoms_during_blood_pressure_elevation_sweating",
+    "symptoms_during_blood_pressure_elevation_blurred_vision",
+    "regular_symptoms_dizziness",
+    "regular_symptoms_palpitations",
+    "regular_symptoms_chest_tightness",
+    "regular_symptoms_shortness_of_breath",
+    "regular_symptoms_chest_pain",
+    "regular_symptoms_intermittent_claudication",
+    "regular_symptoms_lower_limb_weakness",
+    "regular_symptoms_lower_limb_edema",
+    "regular_symptoms_increased_nighttime_urination",
+    "regular_symptoms_facial_edema",
+    "regular_symptoms_hematuria",
+    "regular_symptoms_proteinuria",
+    "history_of_cardiovascular_risk_factors_elevated_blood_glucose",
+    "history_of_cardiovascular_risk_factors_diabetes",
+    "history_of_cardiovascular_risk_factors_hyperlipidemia",
+    "history_of_cardiovascular_risk_factors_hyperuricemia",
+    "history_of_cardiovascular_risk_factors_gout",
+    "history_of_cardiovascular_risk_factors_renal_dysfunction",
+    "history_of_cardiovascular_risk_factors_thyroid_dysfunction",
+    "history_of_cardiovascular_risk_factors_long_term_medication_affecting_blood_pressure",
+    "history_of_cardiovascular_complications_cerebral_hemorrhage",
+    "history_of_cardiovascular_complications_cerebral_infarction",
+    "history_of_cardiovascular_complications_transient_ischemic_attack",
+    "history_of_cardiovascular_complications_coronary_heart_disease",
+    "history_of_cardiovascular_complications_myocardial_infarction",
+    "history_of_cardiovascular_complications_heart_failure",
+    "history_of_cardiovascular_complications_atrial_fibrillation",
+    "history_of_cardiovascular_complications_peripheral_vascular_disease",
+    "recent_psychological_stress_work_pressure",
+    "recent_psychological_stress_family_issues",
+    "sleep_problems_poor_sleep_quality",
+    "sleep_problems_use_of_sleeping_pills",
+    "sleep_problems_snoring",
+    "sleep_problems_sleep_apnea",
+    "smoking_habits_years_of_smoking",
+    "smoking_habits_daily_consumption",
+    "alcohol_consumption_years_of_drinking",
+    "alcohol_consumption_daily_consumption",
+    "family_history_of_cardiovascular_diseases_hypertension",
+    "family_history_of_cardiovascular_diseases_coronary_heart_disease",
+    "family_history_of_cardiovascular_diseases_cerebral_infarction",
+    "family_history_of_cardiovascular_diseases_cerebral_hemorrhage",
+    "family_history_of_cardiovascular_diseases_diabetes",
+    "family_history_of_cardiovascular_diseases_hyperlipidemia",
+    "family_history_of_cardiovascular_diseases_gout",
+    "family_history_of_cardiovascular_diseases_kidney_disease",
+    "family_history_of_cardiovascular_diseases_age_of_occurrence_first_degree_relatives",
+    "current_body_mass_index_height",
+    "current_body_mass_index_weight",
+    "current_body_mass_index_waist_circumference",
+    "ecg_examination_history_results",
+    "cardiac_ultrasound_examination_history_results",
+    "carotid_ultrasound_examination_history_results"
+  ]
+}
+```
+2025-08-03 00:43:46,352 - EntityGraph - ERROR - Failed to parse entity response: Expecting value: line 1 column 1 (char 0)
+2025-08-03 01:03:32,309 - EntityGraph - ERROR - response.content: ```json
+{
+  "endpoint": true,
+  "entities": [
+    "date_of_first_elevated_blood_pressure_discovery",
+    "highest_historical_systolic_blood_pressure",
+    "highest_historical_diastolic_blood_pressure",
+    "previous_antihypertensive_medications_name",
+    "previous_antihypertensive_medications_frequency",
+    "previous_antihypertensive_medications_dosage",
+    "previous_antihypertensive_medications_duration",
+    "previous_antihypertensive_medications_adverse_effects",
+    "previous_antihypertensive_medications_discontinuation_reason",
+    "historical_systolic_blood_pressure_range",
+    "historical_diastolic_blood_pressure_range",
+    "method_of_elevated_blood_pressure_discovery",
+    "initial_systolic_blood_pressure_reading",
+    "initial_diastolic_blood_pressure_reading",
+    "secondary_hypertension_screening_results",
+    "usual_systolic_blood_pressure_range",
+    "usual_diastolic_blood_pressure_range",
+    "current_home_systolic_blood_pressure",
+    "current_home_diastolic_blood_pressure",
+    "current_home_heart_rate",
+    "current_antihypertensive_medications_name",
+    "current_antihypertensive_medications_frequency",
+    "current_antihypertensive_medications_dosage",
+    "current_antihypertensive_medications_duration",
+    "symptoms_during_blood_pressure_elevation_headache",
+    "symptoms_during_blood_pressure_elevation_dizziness",
+    "symptoms_during_blood_pressure_elevation_palpitations",
+    "symptoms_during_blood_pressure_elevation_sweating",
+    "symptoms_during_blood_pressure_elevation_blurred_vision",
+    "regular_symptoms_dizziness",
+    "regular_symptoms_palpitations",
+    "regular_symptoms_chest_tightness",
+    "regular_symptoms_shortness_of_breath",
+    "regular_symptoms_chest_pain",
+    "regular_symptoms_intermittent_claudication",
+    "regular_symptoms_lower_limb_weakness",
+    "regular_symptoms_lower_limb_edema",
+    "regular_symptoms_increased_nighttime_urination",
+    "regular_symptoms_facial_edema",
+    "regular_symptoms_hematuria",
+    "regular_symptoms_proteinuria",
+    "history_of_elevated_blood_glucose",
+    "history_of_diabetes",
+    "history_of_hyperlipidemia",
+    "history_of_hyperuricemia",
+    "history_of_gout",
+    "history_of_renal_dysfunction",
+    "history_of_thyroid_dysfunction",
+    "long_term_medication_use_affecting_blood_pressure",
+    "history_of_cerebral_hemorrhage",
+    "history_of_cerebral_infarction",
+    "history_of_transient_ischemic_attack",
+    "history_of_coronary_heart_disease",
+    "history_of_myocardial_infarction",
+    "history_of_heart_failure",
+    "history_of_atrial_fibrillation",
+    "history_of_peripheral_vascular_disease",
+    "recent_psychological_stress_work_pressure",
+    "recent_psychological_stress_family_issues",
+    "sleep_quality",
+    "use_of_sleeping_pills",
+    "snoring",
+    "sleep_apnea",
+    "smoking_years",
+    "smoking_daily_consumption",
+    "alcohol_consumption_years",
+    "alcohol_consumption_daily_amount",
+    "family_history_of_hypertension",
+    "family_history_of_coronary_heart_disease",
+    "family_history_of_cerebral_infarction",
+    "family_history_of_cerebral_hemorrhage",
+    "family_history_of_diabetes",
+    "family_history_of_hyperlipidemia",
+    "family_history_of_gout",
+    "family_history_of_kidney_disease",
+    "first_degree_relative_age_of_stroke",
+    "first_degree_relative_age_of_cerebral_hemorrhage",
+    "first_degree_relative_age_of_myocardial_infarction",
+    "current_body_mass_index_height",
+    "current_body_mass_index_weight",
+    "current_waist_circumference",
+    "ecg_examination_results",
+    "cardiac_ultrasound_examination_results",
+    "carotid_ultrasound_examination_results"
+  ]
+}
+```
+2025-08-03 01:03:32,311 - EntityGraph - ERROR - Failed to parse entity response: Expecting value: line 1 column 1 (char 0)
+2025-08-03 01:33:13,154 - EntityGraph - INFO - Built graph with 83 nodes and 29 edges
+2025-08-03 01:33:13,157 - EntityGraph - INFO - Built graph with 83 nodes and 28 edges
+2025-08-03 01:33:13,582 - EntityGraph - INFO - Community detection completed
+2025-08-03 01:33:13,583 - EntityGraph - INFO - Saved graphs to artifacts
+2025-08-03 02:33:59,997 - EntityGraph - INFO - Built graph with 85 nodes and 29 edges
+2025-08-03 02:34:00,001 - EntityGraph - INFO - Built graph with 85 nodes and 27 edges
+2025-08-03 02:34:00,414 - EntityGraph - INFO - Community detection completed
+2025-08-03 02:43:07,984 - EntityGraph - INFO - Built graph with 83 nodes and 23 edges
+2025-08-03 02:43:07,989 - EntityGraph - INFO - Built graph with 83 nodes and 48 edges
+2025-08-03 02:43:08,448 - EntityGraph - INFO - Community detection completed
+2025-08-03 02:43:08,450 - EntityGraph - INFO - Saved graphs to ./artifacts
+2025-08-03 20:51:32,634 - EntityGraph - INFO - Community detection completed
+2025-08-03 20:51:32,635 - EntityGraph - INFO - Loaded graphs successfully
+2025-08-03 20:51:32,951 - EntityGraph - INFO - Selected node v4 with score 1.500
+2025-08-03 20:51:44,732 - EntityGraph - INFO - Generated hint for node v4
+2025-08-03 20:51:44,734 - LongConversation - INFO - Initial hint message: [COLLECTED INFO]  
+- Name: test  
+- Age: 89  
+- Gender: Female  
+
+[TARGET]  
+You are a hypertension specialist currently in the information collection phase of a consultation with an 89-year-old female patient. Your goal is to gather detailed clinical indicators to evaluate her hypertension condition and provide tailored recommendations. At this stage, it is critical to collect more data before proceeding to any conclusions or recommendations. Focus on gathering the specified entity to ensure a comprehensive understanding of the patient's medical history.
+
+[QUERY ENTITY]  
+- Name: previous_antihypertensive_medications_name  
+- Description: Names of antihypertensive medications previously prescribed to the patient. This information is vital to evaluate treatment adherence, effectiveness, and potential adjustments.  
+- Confidential level: (confidence level [0, 1])  
+- Value: (the extracted value)  
+- Hit: 1 (number of times queried)  
+- Status: 0 (0 for unknown, 1 for low confidence, 2 for high confidence)  
+
+[EXAMPLE QUERY]  
+"Could you tell me the names of any antihypertensive medications you have been prescribed in the past? For example, were you ever prescribed medications like lisinopril, amlodipine, or metoprolol?"  
+
+[REQUIREMENTS]  
+1. The AI must STRICTLY follow this guidance and focus on collecting the specified query entity.  
+2. The AI should actively guide the conversation toward collecting:  
+   - Names of antihypertensive medications previously prescribed to the patient.  
+3. The AI should maintain an aggressive focus on achieving the conversation purpose.  
+4. The AI must not skip ahead or make premature conclusions—focus only on the current collection step.
+2025-08-03 23:25:22,396 - EntityGraph - INFO - Built graph with 10 nodes and 3 edges
+2025-08-03 23:25:22,401 - EntityGraph - INFO - Built graph with 10 nodes and 4 edges
+2025-08-03 23:25:23,047 - EntityGraph - INFO - Community detection completed
+2025-08-03 23:25:23,051 - EntityGraph - INFO - Saved graphs to ./artifacts
+2025-08-03 23:38:10,239 - EntityGraph - INFO - Built graph with 10 nodes and 5 edges
+2025-08-03 23:38:10,244 - EntityGraph - INFO - Built graph with 10 nodes and 4 edges
+2025-08-03 23:38:10,708 - EntityGraph - INFO - Community detection completed
+2025-08-03 23:38:10,710 - EntityGraph - INFO - Saved graphs to ./artifacts
+2025-08-03 23:42:58,698 - EntityGraph - INFO - Built graph with 10 nodes and 0 edges
+2025-08-03 23:42:58,704 - EntityGraph - INFO - Built graph with 10 nodes and 4 edges
+2025-08-03 23:42:59,169 - EntityGraph - INFO - Community detection completed
+2025-08-03 23:42:59,170 - EntityGraph - INFO - Saved graphs to ./artifacts
+2025-08-03 23:46:58,142 - EntityGraph - INFO - Built graph with 10 nodes and 0 edges
+2025-08-03 23:46:58,144 - EntityGraph - INFO - Built graph with 10 nodes and 3 edges
+2025-08-03 23:46:58,573 - EntityGraph - INFO - Community detection completed
+2025-08-03 23:46:58,573 - EntityGraph - INFO - Saved graphs to ./artifacts
+2025-08-03 23:59:07,894 - EntityGraph - INFO - Built graph with 151 nodes and 29 edges
+2025-08-03 23:59:07,900 - EntityGraph - INFO - Built graph with 151 nodes and 42 edges
+2025-08-03 23:59:08,512 - EntityGraph - INFO - Community detection completed
+2025-08-03 23:59:08,515 - EntityGraph - INFO - Saved graphs to ./artifacts
+2025-08-04 00:02:56,953 - EntityGraph - INFO - Community detection completed
+2025-08-04 00:02:56,955 - EntityGraph - INFO - Loaded graphs successfully
+2025-08-04 00:02:56,958 - EntityGraph - INFO - Selected node v22 with score 1.500
+2025-08-04 00:03:12,956 - EntityGraph - INFO - Generated hint for node v22
+2025-08-04 00:03:12,956 - LongConversation - INFO - Initial hint message: [COLLECTED INFO]  
+- Name: test  
+- Age: 89  
+- Gender: male  
+
+[TARGET]  
+You are a hypertension specialist responsible for conducting patient assessments and providing medical recommendations. The conversation is currently in the **information collection phase**, where your goal is to gather all necessary clinical indicators from the patient before making any formal diagnosis or recommendations. Focus on systematically collecting one piece of information at a time to ensure accuracy and completeness.  
+
+[QUERY ENTITY]  
+- Name: current_antihypertensive_medications_names  
+- Description: A list of names of antihypertensive medications currently being taken by the patient. These drugs are prescribed to manage high blood pressure, and their effectiveness or side effects can influence diagnosis and treatment adjustments.  
+- Confidential level: (confidence level [0, 1])  
+- Value: (the extracted value)  
+- Hit: 1 (number of times queried)  
+- Status: 0 (0 for unknown, 1 for low confidence, 2 for high confidence)  
+
+[EXAMPLE QUERY]  
+"Mr. Test, could you please tell me the names of any antihypertensive medications you are currently taking? These are medications prescribed to help manage your blood pressure."  
+
+[REQUIREMENTS]  
+1. STRICTLY focus on collecting the names of the antihypertensive medications the patient is currently taking. Do not deviate to other topics or make premature conclusions.  
+2. Actively guide the conversation to ensure the patient provides complete and accurate information about their current medications.  
+3. Maintain a polite and empathetic tone while ensuring clarity in your questions.  
+4. Avoid skipping ahead or making assumptions about the patient's condition until all required information is gathered.  
+5. Use English for communication.
+2025-08-04 00:04:14,523 - EntityGraph - INFO - Community detection completed
+2025-08-04 00:04:14,524 - EntityGraph - INFO - Loaded graphs successfully
+2025-08-04 00:04:14,525 - EntityGraph - INFO - Selected node v22 with score 1.500
+2025-08-04 00:04:31,058 - EntityGraph - INFO - Generated hint for node v22
+2025-08-04 00:04:31,060 - LongConversation - INFO - Initial hint message: [COLLECTED INFO]  
+- Name: test  
+- Age: 89  
+- Gender: male  
+
+[TARGET]  
+You are a hypertension specialist conducting a patient assessment to provide medical recommendations. The conversation is currently in the **information collection phase**. Your goal is to gather all necessary clinical indicators before making any formal diagnosis or recommendations. Focus on systematically collecting the required data without skipping ahead or drawing premature conclusions.  
+
+[QUERY ENTITY]  
+- Name: current_antihypertensive_medications_names  
+- Description: A list of names of antihypertensive medications currently being taken by the patient. These drugs are prescribed to manage high blood pressure, and their effectiveness or side effects can influence diagnosis and treatment adjustments.  
+- Confidential level: (confidence level [0, 1])  
+- Value: (the extracted value)  
+- Hit: 1 (number of times queried)  
+- Status: 0 (0 for unknown, 1 for low confidence, 2 for high confidence)  
+
+[EXAMPLE QUERY]  
+"您目前是否正在服用任何降压药物？如果有，请告诉我这些药物的名称。这有助于我更好地了解您的治疗情况并评估其效果。"  
+
+[REQUIREMENTS]  
+1. STRICTLY follow this guidance and focus on collecting the specified query entity: **current_antihypertensive_medications_names**.  
+2. Actively guide the conversation toward gathering this information while maintaining a polite and professional tone.  
+3. Maintain an aggressive focus on achieving the conversation purpose without deviating or making assumptions.  
+4. Do not skip ahead or make premature conclusions—focus only on the current collection step.  
+5. Use 中文 for communication.  
+
+Next step: Ask the patient about their current antihypertensive medications using the example query or a similar approach.
+2025-08-04 00:04:47,315 - EntityGraph - INFO - Updated node v22 with value: None...
+2025-08-04 00:04:59,652 - EntityGraph - INFO - Updated node v23: 由于患者当前未服用任何抗高血压药物（current_antihypertensive_medications_names = None），因此服药频率的权重调整为0，因为该节点不再相关。
+2025-08-04 00:04:59,653 - EntityGraph - INFO - Updated node v24: 由于患者当前未服用任何抗高血压药物（current_antihypertensive_medications_names = None），因此药物剂量的权重调整为0，因为该节点不再相关。
+2025-08-04 00:04:59,653 - EntityGraph - INFO - Updated node v25: 由于患者当前未服用任何抗高血压药物（current_antihypertensive_medications_names = None），因此用药时长的权重调整为0，因为该节点不再相关。
+2025-08-04 00:04:59,659 - EntityGraph - INFO - Selected node v4 with score 1.500
+2025-08-04 00:05:20,248 - EntityGraph - INFO - Generated hint for node v4
+2025-08-04 00:05:20,250 - LongConversation - INFO - Conversation turn with hint: [COLLECTED INFO]  
+- Name: current_antihypertensive_medications_names  
+  Description: A list of nam...

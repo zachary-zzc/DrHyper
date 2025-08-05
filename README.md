@@ -11,7 +11,6 @@
   - [API Server](#api-server)
 - [Examples](#examples)
 - [License](#license)
-- [Citation](#citation)
 
 ## Project Introduction
 

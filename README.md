@@ -191,80 +191,215 @@ DrHyper provides a FastAPI-based server for integration with other applications.
 #### Start the Server
 
 ```bash
-python server.py
-```
-
-Or with custom host/port:
-
-```bash
 python deploy.py --host 0.0.0.0 --port 8000 --reload
 ```
 
-#### API Endpoints
+#### Endpoints
 
-##### 1. Initialize Conversation
+##### Initialize Conversation
 
-```http
-POST /init_conversation
-Content-Type: application/json
+Initializes a new conversation session with patient information.
 
-{
-    "name": "John Doe",
-    "age": 55,
-    "gender": "male",
-    "model": "Dr.Hyper"  // Options: "Dr.Hyper", "LLAMA", "DeepSeek", "Qwen"
-}
-```
+- **URL**: `/init_conversation`
+- **Method**: `POST`
+- **Request Body**:
+  ```json
+  {
+    "name": "string",
+    "age": 0,
+    "gender": "string",
+    "model": "string"
+  }
+  ```
+- **Response**:
+  ```json
+  {
+    "conversation_id": "string",
+    "ai_message": "string",
+    "log_messages": "string"
+  }
+  ```
+- **Notes**:
+  - `model` should be set to "DrHyper" for hypertension consultations
+  - `conversation_id` is a UUID that identifies the conversation
+  - `ai_message` contains the initial message from the AI
+  - `log_messages` provides detailed logs of the initialization process
 
-Response:
-```json
-{
-    "conversation_id": "uuid-string",
-    "ai_message": "Initial greeting and first question"
-}
-```
+##### Chat
 
-##### 2. Send Message
+Sends a message to an existing conversation and receives an AI response.
 
-```http
-POST /chat
-Content-Type: application/json
+- **URL**: `/chat`
+- **Method**: `POST`
+- **Request Body**:
+  ```json
+  {
+    "conversation_id": "string",
+    "human_message": "string"
+  }
+  ```
+- **Response**:
+  ```json
+  {
+    "ai_message": "string",
+    "accomplish": false,
+    "log_messages": "string"
+  }
+  ```
+- **Notes**:
+  - `accomplish` is a boolean indicating whether the diagnosis is complete
+  - When `accomplish` is `true`, the conversation has reached a diagnostic conclusion
 
-{
-    "conversation_id": "uuid-string",
-    "human_message": "Patient's response"
-}
-```
+##### End Conversation
 
-Response:
-```json
-{
-    "ai_message": "AI doctor's response"
-}
-```
+Ends a conversation and optionally removes it from memory.
 
-##### 3. End Conversation
+- **URL**: `/end_conversation`
+- **Method**: `POST`
+- **Request Body**:
+  ```json
+  {
+    "conversation_id": "string",
+    "in_memory": false
+  }
+  ```
+- **Response**:
+  ```json
+  {
+    "conversation_id": "string",
+    "log_messages": "string"
+  }
+  ```
+- **Notes**:
+  - If `in_memory` is `true`, the conversation will remain in memory after being saved
+  - If `in_memory` is `false` (default), the conversation will be removed from memory after being saved
 
-```http
-POST /end_conversation
-Content-Type: application/json
+##### Save Conversation
 
-{
-    "conversation_id": "uuid-string",
-    "patient_background_condition": "Optional background info",
-    "patient_background_diagnosis": "Optional diagnosis info"
-}
-```
+Explicitly saves a conversation to disk while keeping it in memory.
 
-Response:
-```json
-{
-    "conversation_id": "uuid-string",
-    "assessment": "Clinical assessment",
-    "patient_condition": "Summarized condition",
-    "patient_diagnosis": "Final diagnosis"
-}
-```
+- **URL**: `/save_conversation`
+- **Method**: `POST`
+- **Request Parameters**:
+  - `conversation_id`: String identifier of the conversation
+- **Response**:
+  ```json
+  {
+    "message": "string",
+    "log_messages": "string"
+  }
+  ```
+- **Notes**:
+  - This endpoint maintains the conversation in memory after saving it to disk
+
+##### Load Conversation
+
+Loads a conversation from disk into memory.
+
+- **URL**: `/load_conversation`
+- **Method**: `POST`
+- **Request Parameters**:
+  - `conversation_id`: String identifier of the conversation
+- **Response**:
+  ```json
+  {
+    "message": "string",
+    "log_messages": "string"
+  }
+  ```
+- **Notes**:
+  - The conversation must have been previously saved to disk
+
+##### List Conversations
+
+Lists all conversations both in memory and on disk.
+
+- **URL**: `/list_conversations`
+- **Method**: `GET`
+- **Response**:
+  ```json
+  {
+    "in_memory": ["string"],
+    "on_disk": ["string"],
+    "log_messages": "string"
+  }
+  ```
+- **Notes**:
+  - `in_memory` is an array of conversation IDs currently in memory
+  - `on_disk` is an array of conversation IDs saved to disk
+
+##### Update Settings
+
+Updates system settings.
+
+- **URL**: `/update_settings`
+- **Method**: `POST`
+- **Request Body**:
+  ```json
+  {
+    "component": "string",
+    "parameter": "string",
+    "value": "any"
+  }
+  ```
+- **Response**:
+  ```json
+  {
+    "message": "string",
+    "log_messages": "string"
+  }
+  ```
+- **Notes**:
+  - Valid components are: "SYSTEM", "GRAPH", "CONVERSATION LLM", "GRAPH LLM"
+  - Parameters and valid values depend on the component
+
+#### Data Models
+
+##### InitConversationRequest
+- `name`: Patient's name (string)
+- `age`: Patient's age (integer)
+- `gender`: Patient's gender (string)
+- `model`: Model to use, should be "DrHyper" (string)
+
+##### InitConversationResponse
+- `conversation_id`: Unique identifier for the conversation (string)
+- `ai_message`: Initial message from the AI (string)
+- `log_messages`: Detailed logs (string)
+
+##### ChatRequest
+- `conversation_id`: Identifier of the conversation (string)
+- `human_message`: Message from the patient (string)
+
+##### ChatResponse
+- `ai_message`: Response from the AI (string)
+- `accomplish`: Whether diagnosis is complete (boolean)
+- `log_messages`: Detailed logs (string)
+
+##### EndConversationRequest
+- `conversation_id`: Identifier of the conversation (string)
+- `in_memory`: Whether to keep the conversation in memory (boolean)
+
+##### EndConversationResponse
+- `conversation_id`: Identifier of the conversation (string)
+- `log_messages`: Detailed logs (string)
+
+##### SettingsUpdateRequest
+- `component`: Component to update (string)
+- `parameter`: Parameter to update (string)
+- `value`: New value for the parameter (any)
+
+##### SettingsUpdateResponse
+- `message`: Status message (string)
+- `log_messages`: Detailed logs (string)
+
+##### ConversationResponse
+- `message`: Status message (string)
+- `log_messages`: Detailed logs (string)
+
+##### ListConversationsResponse
+- `in_memory`: Array of conversation IDs in memory (array of strings)
+- `on_disk`: Array of conversation IDs on disk (array of strings)
+- `log_messages`: Detailed logs (string)
 
 ## Examples
 
@@ -301,6 +436,8 @@ Patient: I've been checking it for about 2 months now. It's usually around 140-1
 
 ### Example 2: API Integration
 
+Here's a complete example of using the API to conduct a hypertension consultation:
+
 ```python
 import requests
 import json
@@ -309,43 +446,72 @@ import json
 BASE_URL = "http://localhost:8000"
 
 # Initialize conversation
-init_data = {
-    "name": "Li Ming",
-    "age": 62,
-    "gender": "male",
-    "model": "Dr.Hyper"
-}
+def init_conversation(name, age, gender):
+    init_data = {
+        "name": name,
+        "age": age,
+        "gender": gender,
+        "model": "DrHyper"
+    }
+    response = requests.post(f"{BASE_URL}/init_conversation", json=init_data)
+    if response.status_code != 200:
+        raise Exception(f"Failed to initialize: {response.json()['detail']}")
+    return response.json()
 
-response = requests.post(f"{BASE_URL}/init_conversation", json=init_data)
-result = response.json()
-conversation_id = result["conversation_id"]
-print(f"AI: {result['ai_message']}")
-
-# Send patient messages
-messages = [
-    "My blood pressure has been high lately, around 150/95",
-    "I've been feeling dizzy in the mornings",
-    "Yes, I take medication but sometimes forget",
-    "I don't exercise much and eat a lot of salty food"
-]
-
-for message in messages:
+# Send a message and get a response
+def send_message(conversation_id, message):
     chat_data = {
         "conversation_id": conversation_id,
         "human_message": message
     }
     response = requests.post(f"{BASE_URL}/chat", json=chat_data)
-    print(f"Patient: {message}")
-    print(f"AI: {response.json()['ai_message']}\n")
+    if response.status_code != 200:
+        raise Exception(f"Failed to send message: {response.json()['detail']}")
+    return response.json()
 
-# End conversation and get assessment
-end_data = {
-    "conversation_id": conversation_id
-}
-response = requests.post(f"{BASE_URL}/end_conversation", json=end_data)
-assessment = response.json()
-print(f"Final Assessment: {assessment['assessment']}")
-print(f"Diagnosis: {assessment['patient_diagnosis']}")
+# End the conversation
+def end_conversation(conversation_id):
+    end_data = {
+        "conversation_id": conversation_id
+    }
+    response = requests.post(f"{BASE_URL}/end_conversation", json=end_data)
+    if response.status_code != 200:
+        raise Exception(f"Failed to end conversation: {response.json()['detail']}")
+    return response.json()
+
+# Main execution flow
+try:
+    # Start conversation
+    result = init_conversation("Li Ming", 62, "male")
+    conversation_id = result["conversation_id"]
+    print(f"Conversation started with ID: {conversation_id}")
+    print(f"AI: {result['ai_message']}")
+    
+    # Sample conversation flow
+    messages = [
+        "My blood pressure has been high lately, around 150/95",
+        "I've been feeling dizzy in the mornings",
+        "Yes, I take medication but sometimes forget",
+        "I don't exercise much and eat a lot of salty food"
+    ]
+    
+    for message in messages:
+        print(f"\nPatient: {message}")
+        response = send_message(conversation_id, message)
+        print(f"AI: {response['ai_message']}")
+        
+        # Check if diagnosis is complete
+        if response["accomplish"]:
+            print("\nDiagnosis completed automatically.")
+            break
+    
+    # Manually end the conversation if not already completed
+    if not response.get("accomplish", False):
+        end_result = end_conversation(conversation_id)
+        print(f"\nConversation ended: {end_result['conversation_id']}")
+
+except Exception as e:
+    print(f"Error: {str(e)}")
 ```
 
 ## License

@@ -3,12 +3,18 @@ import os
 import argparse
 import subprocess
 import sys
+from pathlib import Path
+import uvicorn
+from config.settings import ConfigManager
+
+# Import the app from server.py
+from api import server
 
 def check_requirements():
     """Check if all required packages are installed"""
     required = [
         "fastapi", "uvicorn", "pydantic", 
-        "langchain", "openai", "configparser"
+        "langchain", "openai"
     ]
     
     missing = []
@@ -29,25 +35,25 @@ def check_requirements():
 
 def ensure_directories():
     """Ensure all required directories exist"""
-    dirs = ["logs", "artifacts", "conversations", "assessments"]
-    for d in dirs:
-        os.makedirs(d, exist_ok=True)
-    print("Created necessary directories")
-
-def deploy(host, port, reload):
-    """Deploy the API using uvicorn"""
-    print(f"Deploying API on {host}:{port}")
-    
-    # Convert relative import paths to absolute paths
-    module_path = "api.server:app"
-    
-    # Start uvicorn
-    cmd = ["uvicorn", module_path, "--host", host, "--port", str(port)]
-    if reload:
-        cmd.append("--reload")
-    
-    print(f"Running command: {' '.join(cmd)}")
-    subprocess.run(cmd)
+    try:
+        config = ConfigManager()
+        
+        # Get directories from config
+        dirs = [
+            config.system.conversation_directory,
+            config.system.working_directory,
+        ]
+        
+        for d in dirs:
+            os.makedirs(d, exist_ok=True)
+            print(f"Created directory: {d}")
+    except Exception as e:
+        print(f"Error setting up directories: {e}")
+        print("Creating default directories instead...")
+        default_dirs = ["conversations", "working_dir"]
+        for d in default_dirs:
+            os.makedirs(d, exist_ok=True)
+            print(f"Created directory: {d}")
 
 def main():
     parser = argparse.ArgumentParser(description="Deploy Dr.Hyper API")
@@ -65,7 +71,8 @@ def main():
     ensure_directories()
     
     if not args.check:
-        deploy(args.host, args.port, args.reload)
+        print(f"Deploying API on {args.host}:{args.port}")
+        uvicorn.run("api.server:app", host=args.host, port=args.port, reload=args.reload)
     else:
         print("Requirements check passed. Ready to deploy.")
 

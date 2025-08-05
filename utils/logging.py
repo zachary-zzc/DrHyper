@@ -35,33 +35,3 @@ def get_logger(name: str) -> logging.Logger:
         logger.addHandler(file_handler)
     
     return logger
-
-def setup_conversation_logger(conversation_id: str) -> logging.Logger:
-    """Set up a conversation-specific logger"""
-    logger_name = f"conversation.{conversation_id}"
-    logger = logging.getLogger(logger_name)
-    
-    if not logger.handlers:
-        logger.setLevel(logging.INFO)
-        
-        # File handler
-        log_dir = "conversation_logs"
-        if not os.path.exists(log_dir):
-            os.makedirs(log_dir)
-            
-        file_handler = logging.FileHandler(
-            os.path.join(log_dir, f"{conversation_id}.log"),
-            mode='a',
-            encoding='utf-8'
-        )
-        file_handler.setLevel(logging.INFO)
-        
-        # Formatter
-        formatter = logging.Formatter(
-            '%(asctime)s - %(levelname)s - %(message)s'
-        )
-        file_handler.setFormatter(formatter)
-        
-        logger.addHandler(file_handler)
-    
-    return logger

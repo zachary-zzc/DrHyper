@@ -2,43 +2,12 @@
 import argparse
 import os
 import sys
-import pickle
 
 from core.conversation import LongConversation
 from prompts.templates import ConversationPrompts
-from utils.llm_loader import load_chat_model
 from utils.logging import get_logger
 from config.settings import ConfigManager
-
-# ANSI color codes for terminal output
-class Colors:
-    RESET = "\033[0m"
-    BOLD = "\033[1m"
-    BLUE = "\033[94m"
-    GREEN = "\033[92m"
-    YELLOW = "\033[93m"
-    CYAN = "\033[96m"
-    RED = "\033[91m"
-
-def format_doctor_response(text: str) -> str:
-    """Format doctor's response with color"""
-    return f"{Colors.GREEN}{Colors.BOLD}Dr.Hyper:{Colors.RESET} {text}"
-
-def format_patient_input(text: str) -> str:
-    """Format patient input with color"""
-    return f"{Colors.BLUE}{Colors.BOLD}Patient:{Colors.RESET} {text}"
-
-def format_system_message(text: str) -> str:
-    """Format system messages with color"""
-    return f"{Colors.YELLOW}System:{Colors.RESET} {text}"
-
-def format_debug(text: str) -> str:
-    """Format debug messages with color"""
-    return f"{Colors.CYAN}Debug:{Colors.RESET} {text}"
-
-def format_error(text: str) -> str:
-    """Format error messages with color"""
-    return f"{Colors.RED}Error:{Colors.RESET} {text}"
+from utils.aux import *
 
 def get_patient_info():
     """Get patient information from user input"""
@@ -61,33 +30,6 @@ def get_patient_info():
             print(format_system_message("Please enter 'male', 'female', or 'other'"))
             
     return name, age, gender
-
-def load_models(verbose=False):
-    """Load AI models"""
-    print(format_system_message("Loading AI models..."))
-    config = ConfigManager()
-    try:
-        conv_model = load_chat_model(config.conversation_llm.provider, 
-                                     config.conversation_llm.model,
-                                     api_key=config.conversation_llm.api_key,
-                                     base_url=config.conversation_llm.base_url,
-                                     model_path=config.conversation_llm.model_path,
-                                     max_tokens=config.conversation_llm.max_tokens,
-                                     temperature=config.conversation_llm.temperature)
-        graph_model = load_chat_model(config.graph_llm.provider,
-                                      config.graph_llm.model,
-                                      api_key=config.graph_llm.api_key,
-                                      base_url=config.graph_llm.base_url,
-                                      model_path=config.graph_llm.model_path,
-                                      max_tokens=config.graph_llm.max_tokens,
-                                      temperature=config.graph_llm.temperature)
-        return conv_model, graph_model
-    except Exception as e:
-        print(format_system_message(f"Error loading models: {e}"))
-        if verbose:
-            import traceback
-            print(format_debug(traceback.format_exc()))
-        raise(e)
             
 def create_prompt(patient_info=None):
     config = ConfigManager()
@@ -163,7 +105,7 @@ def cmd_create_graph(args):
             print(format_debug("Creating new graphs..."))
             
         # Initialize and save graph
-        conv.init_graph(save=True)
+        log_messages = conv.init_graph(save=True)
         
         # Confirm success
         entity_path = os.path.join(output_dir, "entity_graph.pkl")
@@ -182,6 +124,7 @@ def cmd_create_graph(args):
 
 def cmd_start_conversation(args):
     """Command to start a conversation"""
+    config = ConfigManager()
     logger = get_logger("CLI")
     if args.verbose:
         logger.setLevel("DEBUG")
@@ -194,24 +137,8 @@ def cmd_start_conversation(args):
         print(format_system_message(f"Entity graph: {entity_path}"))
         print(format_system_message(f"Relation graph: {relation_path}"))
         
-        # Try to load patient info if it exists
-        patient_info_path = os.path.join(os.path.dirname(entity_path), "patient_info.pkl")
-        if os.path.exists(patient_info_path):
-            try:
-                with open(patient_info_path, "rb") as f:
-                    patient_info = pickle.load(f)
-                print(format_system_message(f"Loaded patient info for {patient_info['name']}"))
-                name, age, gender = patient_info['name'], patient_info['age'], patient_info['gender']
-                use_patient_info = True
-            except Exception as e:
-                print(format_system_message(f"Error loading patient info: {e}"))
-                use_patient_info = False
-        else:
-            use_patient_info = False
-            
-        if not use_patient_info:
-            print(format_system_message("No patient info found or could not load it."))
-            name, age, gender = get_patient_info()
+        print(format_system_message("No patient info found or could not load it."))
+        name, age, gender = get_patient_info()
     else:
         print(format_system_message("No existing graphs found. You need to provide patient information:"))
         name, age, gender = get_patient_info()
@@ -230,7 +157,7 @@ def cmd_start_conversation(args):
     # Create conversation
     print(format_system_message("Initializing conversation..."))
     try:
-        working_dir = args.graph_dir if args.graph_dir else "artifacts"
+        working_dir = config.system.working_directory
         
         conv = LongConversation(
             target=prompt,
@@ -238,7 +165,7 @@ def cmd_start_conversation(args):
             graph_model=graph_model,
             routine=routine,
             visualize=False,
-            working_directory=working_dir
+            working_directory=working_dir,
         )
         
         if graphs_exist:
@@ -259,8 +186,8 @@ def cmd_start_conversation(args):
     
     # Start conversation
     try:
-        initial_response = conv.init()
-        print("\n" + format_doctor_response(initial_response))
+        response_content, _ = conv.init()
+        print("\n" + format_doctor_response(response_content))
         
         # Main conversation loop
         while True:
@@ -275,8 +202,15 @@ def cmd_start_conversation(args):
                     print(format_debug("Processing response..."))
                     print(format_debug(f"Hint: {conv.current_hint[:100]}..."))
                 
-                ai_response = conv.conversation(user_input)
+                ai_response, is_accomplished, _ = conv.conversation(user_input)
+                print(ai_response, is_accomplished)
+                
                 print("\n" + format_doctor_response(ai_response))
+                
+                if is_accomplished:
+                    print(format_system_message("\nThe consultation goals have been accomplished!"))
+                    print(format_system_message("Ending conversation. Goodbye!"))
+                    break
                 
             except KeyboardInterrupt:
                 print(format_system_message("\nEnding conversation. Goodbye!"))

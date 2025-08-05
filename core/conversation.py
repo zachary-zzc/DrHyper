@@ -43,7 +43,7 @@ class BaseConversation:
         self.messages: List[BaseMessage] = []
         self.think_history: List[Dict[str, Any]] = []
         self.max_tokens = max_tokens
-        self.logger = get_logger(self.__class__.__name__)
+        # self.logger = get_logger(self.__class__.__name__)
         
     def _process_response(self, response_text: str) -> Dict[str, str]:
         """Extract think content and regular response from AI response"""
@@ -102,27 +102,52 @@ class LongConversation(BaseConversation):
         )
         
         self.current_hint = ""
+        self.messages: List[BaseMessage] = []
+        self.entire_messages: List[BaseMessage] = []
+        self.think_history: List[Dict[str, Any]] = []
+        self.message_reserve_turns: int = 2  # Number of turns to reserve in history
+        
         self._ensure_working_directory()
     
     def _ensure_working_directory(self):
         """Ensure working directory exists"""
+        log_messages = []
         if self.working_directory and not os.path.exists(self.working_directory):
             os.makedirs(self.working_directory)
+            # self.logger.info(f"Created working directory: {self.working_directory}")
+            log_messages.append(f"Created working directory: {self.working_directory}")
+        else:
+            log_messages.append("Working directory already exists or not specified")
+        return log_messages
     
     def init_graph(self, save: bool = False):
         """Initialize the entity graph"""
-        self.plan_graph.init(save=save)
+        # self.logger.info("Initializing entity graph...")
+        log_messages = self.plan_graph.init(save=save)
+        # self.logger.info("\n".join(log_messages))
+        return log_messages
     
     def load_graph(self, entity_graph_path: str, relation_graph_path: str):
         """Load existing graphs from files"""
-        self.plan_graph.load_graphs(entity_graph_path, relation_graph_path)
+        # self.logger.info(f"Loading graphs from {entity_graph_path} and {relation_graph_path}")
+        log_messages = self.plan_graph.load_graphs(entity_graph_path, relation_graph_path)
+        # self.logger.info("\n".join(log_messages))
+        return log_messages
     
-    def init(self) -> str:
+    def init(self):
         """Initialize the conversation and return the first AI message"""
-        hint_message, plan_status = self.plan_graph.get_hint_message()
+        log_messages = []
+        # self.logger.info("Initializing conversation...")
+        log_messages.append("Initializing conversation...")
+        
+        hint_message, plan_status, hint_log_messages = self.plan_graph.get_hint_message()
+        log_messages.extend(hint_log_messages)
+        
         self.messages.append(SystemMessage(content=hint_message))
         
-        self.logger.info(f"Initial hint message: {hint_message}")
+        # self.logger.info(f"Initial hint message: {hint_message}")
+        log_messages.append(f"Initial hint message: {hint_message[:100]}...")
+        
         response = self.chat_model.invoke(self.messages, stream=self.stream)
         
         processed_response = self._process_response(response.content)
@@ -134,33 +159,62 @@ class LongConversation(BaseConversation):
                 "turn": 0,
                 "think": think_content,
             })
-            self.logger.debug(f"Think content: {think_content}")
+            # self.logger.debug(f"Think content: {think_content}")
+            log_messages.append(f"Captured think content of length: {len(think_content)}")
+
         
         self.messages.pop()  # Remove the hint message
         self.messages.append(AIMessage(content=response_content))
+        # Store the entire message history for later reference, the entire conversations do not contain hint messages
+        self.entire_messages.append(AIMessage(content=response_content))
         self.current_hint = hint_message
         
-        return response_content
+        # self.logger.info(f"Conversation initialized, initial response length: {len(response_content)}")
+        log_messages.append(f"Conversation initialized, initial response length: {len(response_content)}")
+        
+        return response_content, log_messages
     
-    def conversation(self, human_message: str) -> str:
+    def _get_message_turns(self) -> int:
+        """Get the number of turns in the conversation"""
+        return len(self.messages) // 2
+    
+    def conversation(self, human_message: str):
         """Process a conversation turn and return AI response"""
+        log_messages = []
+        # self.logger.info("Processing conversation turn...")
+        log_messages.append("Processing conversation turn...")
+        
         # Get the last AI message for context
         query_message = self.messages[-1].content if self.messages else ""
         
         # Update graph with new information
-        self.plan_graph.accept_message(self.current_hint, query_message, human_message)
+        # self.logger.info("Updating graph with new information...")
+        update_log_messages = self.plan_graph.accept_message(self.current_hint, query_message, human_message)
+        log_messages.extend(update_log_messages)
         
         # Get new hint
-        hint_message, plan_status = self.plan_graph.get_hint_message()
+        # self.logger.info("Getting new hint message...")
+        hint_message, plan_status, hint_log_messages = self.plan_graph.get_hint_message()
+        log_messages.extend(hint_log_messages)
+        
         self.current_hint = hint_message
         
         # Prepare messages for this turn
-        self.messages = [
-            HumanMessage(content=human_message),
-            SystemMessage(content=hint_message)
-        ]
+        # reserve the last messages according to the message_reserve_turns
+        if self._get_message_turns() > self.message_reserve_turns:
+            original_len = len(self.messages)
+            self.messages = self.messages[-(self.message_reserve_turns * 2):]
+            # self.logger.info(f"Trimmed message history from {original_len} to {len(self.messages)}")
+            log_messages.append(f"Trimmed message history from {original_len} to {len(self.messages)}")
+            
+        self.messages.append(HumanMessage(content=human_message))
+        self.messages.append(SystemMessage(content=hint_message))
+        # Store the human message to the entire conversation messages for later reference
+        self.entire_messages.append(HumanMessage(content=human_message))
         
-        self.logger.info(f"Conversation turn with hint: {hint_message[:100]}...")
+        # self.logger.info(f"Conversation turn with hint: {hint_message[:100]}...")
+        log_messages.append(f"Conversation turn with hint: {hint_message[:100]}...")
+        
         response = self.chat_model.invoke(self.messages, stream=self.stream)
         
         # Process response
@@ -174,12 +228,22 @@ class LongConversation(BaseConversation):
                 "turn": turn_index,
                 "think": think_content,
             })
-            self.logger.debug(f"Think content: {think_content}")
+            # self.logger.debug(f"Think content: {think_content}")
+            log_messages.append(f"Captured think content of length: {len(think_content)}")
         
         self.messages.pop()  # Remove hint message
         self.messages.append(AIMessage(content=response_content))
+        self.entire_messages.append(AIMessage(content=response_content))
+
+        # self.logger.info(f"Conversation turn completed, response length: {len(response_content)}")
+        log_messages.append(f"Conversation turn completed, response length: {len(response_content)}")
         
-        return response_content
+        if self.plan_graph.accomplish:
+            # self.logger.info("Conversation goal accomplished!")
+            log_messages.append("Conversation goal accomplished!")
+
+        # return response content, accomplishment status, and log messages
+        return response_content, self.plan_graph.accomplish, log_messages
 
 class GeneralConversation(BaseConversation):
     """General conversation without graph tracking"""
@@ -192,17 +256,47 @@ class GeneralConversation(BaseConversation):
         self.prompt = prompt
         self.working_directory = working_directory
         self.stream = stream
+        
+        log_messages = self._ensure_working_directory()
+        # self.logger.info("\n".join(log_messages))
 
-    def init(self) -> str:
+    def _ensure_working_directory(self):
+        """Ensure working directory exists"""
+        log_messages = []
+        if self.working_directory and not os.path.exists(self.working_directory):
+            os.makedirs(self.working_directory)
+            # self.logger.info(f"Created working directory: {self.working_directory}")
+            log_messages.append(f"Created working directory: {self.working_directory}")
+        else:
+            log_messages.append("Working directory already exists or not specified")
+        return log_messages
+
+    def init(self):
         """Initialize conversation with system prompt"""
+        log_messages = []
+        # self.logger.info("Initializing general conversation...")
+        log_messages.append("Initializing general conversation...")
+        
         self.messages.append(SystemMessage(content=self.prompt))
         response = self.chat_model.invoke(self.messages, stream=self.stream)
         self.messages.append(response)
-        return response.content
+        
+        # self.logger.info(f"Conversation initialized, initial response length: {len(response.content)}")
+        log_messages.append(f"Conversation initialized, initial response length: {len(response.content)}")
+        
+        return response.content, log_messages
     
-    def conversation(self, human_message: str) -> str:
+    def conversation(self, human_message: str):
         """Process a conversation turn"""
+        log_messages = []
+        # self.logger.info("Processing conversation turn...")
+        log_messages.append("Processing conversation turn...")
+        
         self.messages.append(HumanMessage(content=human_message))
         response = self.chat_model.invoke(self.messages, stream=self.stream)
         self.messages.append(response)
-        return response.content
+        
+        # self.logger.info(f"Conversation turn completed, response length: {len(response.content)}")
+        log_messages.append(f"Conversation turn completed, response length: {len(response.content)}")
+        
+        return response.content, log_messages

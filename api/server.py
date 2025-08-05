@@ -10,8 +10,8 @@ from pydantic import BaseModel
 from config.settings import ConfigManager
 from core.conversation import LongConversation, GeneralConversation
 from prompts.templates import ConversationPrompts
-from utils.llm_loader import load_chat_model
-from utils.logging import get_logger, setup_conversation_logger
+from utils.logging import get_logger
+from utils.aux import *
 
 logger = get_logger("APIServer")
 
@@ -26,18 +26,24 @@ class ConversationManager:
     
     def _ensure_directory(self):
         """Ensure conversation directory exists"""
+        log_messages = []
         if not os.path.exists(self.conversation_dir):
             os.makedirs(self.conversation_dir)
+            logger.info(f"Created conversation directory: {self.conversation_dir}")
+            log_messages.append(f"Created conversation directory: {self.conversation_dir}")
+        return log_messages
     
-    def create_conversation(self, request: 'InitConversationRequest') -> Tuple[str, str]:
+    def create_conversation(self, request: 'InitConversationRequest') -> Tuple[str, str, str]:
         """Create a new conversation"""
         conversation_id = str(uuid.uuid4())
-        conv_logger, mem_handler = setup_conversation_logger(conversation_id)
+        log_messages = []
+        logger.info(f"Creating new conversation with ID: {conversation_id}")
+        log_messages.append(f"Creating new conversation with ID: {conversation_id}")
         
         # Get prompts
         prompts = ConversationPrompts()
-        target = prompts.get("HYPERTENSION_TARGET")
-        routine = prompts.get("ROUTINE")
+        target = prompts.get("HYPERTENSION_CONSULTATION_TARGET")
+        routine = prompts.get("HYPERTENSION_ASSESSMENT_ROUTINE")
         
         # Create patient info
         patient_info = {
@@ -52,119 +58,154 @@ class ConversationManager:
         prompt = f"{target}\n{patient_str}"
         
         # Initialize conversation based on model type
-        if request.model == "Dr.Hyper":
-            chat_model = load_chat_model("ali_api|qwen-max-latest")
-            graph_model = load_chat_model("ali_api|qwen-max-latest")
+        if request.model == "DrHyper":
+            logger.info(f"Initializing conversation with DrHyper model for {request.name}")
+            log_messages.append(f"Initializing conversation with DrHyper model for {request.name}")
             
-            # Add reference standards
-            prompt += "\n\n" + prompts.get("REFERENCE_STANDARDS")
+            conv_model, graph_model = load_models(verbose=False)
             
             conv = LongConversation(
                 target=prompt,
-                chat_model=chat_model,
+                conv_model=conv_model,
                 graph_model=graph_model,
                 routine=routine,
                 visualize=False,
-                weight_threshold=0.1
+                weight_threshold=0.1,
+                working_directory=self.config.system.working_directory,
             )
             
             # Load pre-built graphs if available
-            entity_graph_path = os.path.join("artifacts", "entity_graph.pkl")
-            relation_graph_path = os.path.join("artifacts", "relation_graph.pkl")
-            
+            entity_graph_path = os.path.join(self.config.system.working_directory, "entity_graph.pkl")
+            relation_graph_path = os.path.join(self.config.system.working_directory, "relation_graph.pkl")
+
             if os.path.exists(entity_graph_path) and os.path.exists(relation_graph_path):
-                conv.load_graph(entity_graph_path, relation_graph_path)
+                logger.info(f"Loading existing graphs")
+                log_messages.append(f"Loading existing graphs")
+                graph_log_messages = conv.load_graph(entity_graph_path, relation_graph_path)
+                log_messages.extend(graph_log_messages)
             else:
-                conv.init_graph(save=True)
+                logger.info(f"Initializing new graph")
+                log_messages.append(f"Initializing new graph")
+                graph_log_messages = conv.init_graph(save=True)
+                log_messages.extend(graph_log_messages)
                 
         else:
-            # Load appropriate model
-            model_map = {
-                "LLAMA": "ali_api|llama3.1-405b-instruct",
-                "DeepSeek": "ali_api|deepseek-r1",
-                "Qwen": "ali_api|qwen-max-latest"
-            }
-            
-            if request.model not in model_map:
-                raise ValueError(f"Unsupported model: {request.model}")
-                
-            chat_model = load_chat_model(model_map[request.model])
-            
-            # Add routine guidance
-            prompt += f"\n\n{prompts.get('GENERAL_GUIDANCE', routine=routine)}"
-            
-            conv = GeneralConversation(
-                prompt=prompt,
-                chat_model=chat_model
-            )
+            error_msg = f"Unsupported model: {request.model}"
+            logger.error(error_msg)
+            log_messages.append(error_msg)
+            raise ValueError(error_msg)
         
         # Initialize conversation
-        ai_message = conv.init()
+        logger.info("Initializing conversation...")
+        log_messages.append("Initializing conversation...")
+        ai_message, init_log_messages = conv.init()
+        log_messages.extend(init_log_messages)
         
         # Store conversation
         self.conversations[conversation_id] = {
             "conv": conv,
-            "log": mem_handler.logs,
             "messages": [{"role": "assistant", "content": ai_message}],
             "patient": patient_info,
             "model": request.model
         }
         
         logger.info(f"Created conversation {conversation_id} with model {request.model}")
-        return conversation_id, ai_message
+        log_messages.append(f"Created conversation {conversation_id} with model {request.model}")
+        
+        return conversation_id, ai_message, "\n".join(log_messages)
     
-    def process_message(self, conversation_id: str, human_message: str) -> str:
+    def process_message(self, conversation_id: str, human_message: str) -> Tuple[str, bool, str]:
         """Process a chat message"""
+        log_messages = []
+        
         if conversation_id not in self.conversations:
-            raise ValueError(f"Conversation {conversation_id} not found")
+            error_msg = f"Conversation {conversation_id} not found"
+            logger.error(error_msg)
+            log_messages.append(error_msg)
+            raise ValueError(error_msg)
             
         conv_data = self.conversations[conversation_id]
         conv = conv_data["conv"]
         
         # Process message
-        ai_response = conv.conversation(human_message)
+        logger.info(f"Processing message in conversation {conversation_id}")
+        log_messages.append(f"Processing message in conversation {conversation_id}")
+        
+        ai_response, accomplish, process_log_messages = conv.conversation(human_message)
+        log_messages.extend(process_log_messages)
         
         # Update message history
         conv_data["messages"].append({"role": "user", "content": human_message})
         conv_data["messages"].append({"role": "assistant", "content": ai_response})
         
-        logger.info(f"Processed message in conversation {conversation_id}")
-        return ai_response
+        logger.info(f"Processed message in conversation {conversation_id}, accomplish status: {accomplish}")
+        log_messages.append(f"Processed message in conversation {conversation_id}, accomplish status: {accomplish}")
+        
+        return ai_response, accomplish, "\n".join(log_messages)
     
-    def save_conversation(self, conversation_id: str):
+    def save_conversation(self, conversation_id: str, in_memory: bool = False):
         """Save conversation to disk"""
+        log_messages = []
+        
         if conversation_id not in self.conversations:
-            raise ValueError(f"Conversation {conversation_id} not found")
+            error_msg = f"Conversation {conversation_id} not found"
+            logger.error(error_msg)
+            log_messages.append(error_msg)
+            raise ValueError(error_msg)
             
         conv_data = self.conversations[conversation_id]
         filepath = os.path.join(self.conversation_dir, f"{conversation_id}.pkl")
         
-        with open(filepath, "wb") as f:
-            pickle.dump(conv_data, f)
+        try:
+            with open(filepath, "wb") as f:
+                pickle.dump(conv_data, f)
             
-        # Remove from memory
-        del self.conversations[conversation_id]
-        logger.info(f"Saved conversation {conversation_id} to disk")
+            # Remove from memory
+            if in_memory is False:
+                del self.conversations[conversation_id]
+                
+            logger.info(f"Saved conversation {conversation_id} to disk")
+            log_messages.append(f"Saved conversation {conversation_id} to disk")
+            
+        except Exception as e:
+            error_msg = f"Failed to save conversation {conversation_id}: {str(e)}"
+            logger.error(error_msg)
+            log_messages.append(error_msg)
+            raise
+            
+        return "\n".join(log_messages)
     
     def load_conversation(self, conversation_id: str):
         """Load conversation from disk"""
+        log_messages = []
         filepath = os.path.join(self.conversation_dir, f"{conversation_id}.pkl")
         
         if not os.path.exists(filepath):
-            raise FileNotFoundError(f"Conversation file not found: {filepath}")
+            error_msg = f"Conversation file not found: {filepath}"
+            logger.error(error_msg)
+            log_messages.append(error_msg)
+            raise FileNotFoundError(error_msg)
             
-        with open(filepath, "rb") as f:
-            conv_data = pickle.load(f)
+        try:
+            with open(filepath, "rb") as f:
+                conv_data = pickle.load(f)
             
-        # Re-attach logger
-        conv_logger, mem_handler = setup_conversation_logger(conversation_id)
-        mem_handler.logs = conv_data.get("log", [])
-        
-        self.conversations[conversation_id] = conv_data
-        logger.info(f"Loaded conversation {conversation_id} from disk")
+            self.conversations[conversation_id] = conv_data
+            logger.info(f"Loaded conversation {conversation_id} from disk")
+            log_messages.append(f"Loaded conversation {conversation_id} from disk")
+            
+        except Exception as e:
+            error_msg = f"Failed to load conversation {conversation_id}: {str(e)}"
+            logger.error(error_msg)
+            log_messages.append(error_msg)
+            raise
+            
+        return "\n".join(log_messages)
     
-    def list_conversations(self) -> Dict[str, List[str]]:
+    def list_conversations(self):
         """List all conversations"""
+        log_messages = []
+        
         in_memory = list(self.conversations.keys())
         
         on_disk = []
@@ -172,19 +213,81 @@ class ConversationManager:
             if filename.endswith(".pkl"):
                 conv_id = filename[:-4]
                 on_disk.append(conv_id)
+        
+        logger.info(f"Listed {len(in_memory)} in-memory conversations and {len(on_disk)} on-disk conversations")
+        log_messages.append(f"Listed {len(in_memory)} in-memory conversations and {len(on_disk)} on-disk conversations")
                 
-        return {"in_memory": in_memory, "on_disk": on_disk}
+        return {"in_memory": in_memory, "on_disk": on_disk}, "\n".join(log_messages)
     
-    def end_conversation(self, conversation_id: str, background: Optional[Dict[str, str]] = None) -> Dict[str, Any]:
-        """End conversation and generate assessment"""
+    def end_conversation(self, conversation_id: str, in_memory: bool = False):
+        """End conversation"""
+        log_messages = []
+        
         if conversation_id not in self.conversations:
-            raise ValueError(f"Conversation {conversation_id} not found")
+            error_msg = f"Conversation {conversation_id} not found"
+            logger.error(error_msg)
+            log_messages.append(error_msg)
+            raise ValueError(error_msg)
             
         conv_data = self.conversations[conversation_id]
-        return conv_data       
+        save_log_messages = self.save_conversation(conversation_id, in_memory=in_memory)
+        log_messages.append(save_log_messages)
+        
+        logger.info(f"Ended conversation {conversation_id}")
+        log_messages.append(f"Ended conversation {conversation_id}")
+        
+        return "\n".join(log_messages)
+    
+    def update_settings(self, component: str, parameter: str, value: Any):
+        """
+        Update system settings
+
+        Args:
+            component: Component to update (matching section names in config file like "SYSTEM", "GRAPH", "CONVERSATION LLM", "GRAPH LLM")
+            parameter: Parameter name to update
+            value: New value for the parameter
+
+        Raises:
+            ValueError: If component or parameter is invalid
+        """
+        log_messages = []
+        
+        # Normalize the component name to match config attributes
+        component_attr = component.lower().replace(" ", "_")
+
+        # Check if the component exists in the config
+        if not hasattr(self.config, component_attr):
+            error_msg = f"Component {component} not found in configuration. Valid components are: SYSTEM, GRAPH, CONVERSATION LLM, GRAPH LLM"
+            logger.error(error_msg)
+            log_messages.append(error_msg)
+            raise ValueError(error_msg)
+
+        # Get the component object
+        config_component = getattr(self.config, component_attr)
+
+        # Check if the parameter exists in the component
+        if not hasattr(config_component, parameter):
+            error_msg = f"Unknown parameter '{parameter}' for component {component}"
+            logger.error(error_msg)
+            log_messages.append(error_msg)
+            raise ValueError(error_msg)
+
+        # Update the parameter
+        try:
+            old_value = getattr(config_component, parameter)
+            setattr(config_component, parameter, value)
+            logger.info(f"Updated {component}.{parameter} from {old_value} to {value}")
+            log_messages.append(f"Updated {component}.{parameter} from {old_value} to {value}")
+        except Exception as e:
+            error_msg = f"Failed to update {component}.{parameter} to {value}: {str(e)}"
+            logger.error(error_msg)
+            log_messages.append(error_msg)
+            raise
+            
+        return "\n".join(log_messages)
 
 # Initialize app and manager
-app = FastAPI(title="Medical Conversation API")
+app = FastAPI(title="DrHyper Conversation API")
 manager = ConversationManager()
 
 # Request/Response Models
@@ -197,6 +300,7 @@ class InitConversationRequest(BaseModel):
 class InitConversationResponse(BaseModel):
     conversation_id: str
     ai_message: str
+    log_messages: str = ""
 
 class ChatRequest(BaseModel):
     conversation_id: str
@@ -204,27 +308,45 @@ class ChatRequest(BaseModel):
 
 class ChatResponse(BaseModel):
     ai_message: str
+    accomplish: bool = False  # if the diagnosis is finished, accomplish the conversation
+    log_messages: str = ""
 
 class EndConversationRequest(BaseModel):
     conversation_id: str
-    patient_background_condition: Optional[str] = None
-    patient_background_diagnosis: Optional[str] = None
+    in_memory: bool = False  # whether to keep the conversation in memory after ending
 
 class EndConversationResponse(BaseModel):
     conversation_id: str
-    assessment: str
-    patient_condition: str
-    patient_diagnosis: str
+    log_messages: str = ""
+
+class SettingsUpdateRequest(BaseModel):
+    component: str
+    parameter: str
+    value: Any
+
+class SettingsUpdateResponse(BaseModel):
+    message: str
+    log_messages: str = ""
+
+class ConversationResponse(BaseModel):
+    message: str
+    log_messages: str = ""
+
+class ListConversationsResponse(BaseModel):
+    in_memory: List[str]
+    on_disk: List[str]
+    log_messages: str = ""
 
 # Endpoints
 @app.post("/init_conversation", response_model=InitConversationResponse)
 async def init_conversation(request: InitConversationRequest):
     """Initialize a new conversation"""
     try:
-        conversation_id, ai_message = manager.create_conversation(request)
+        conversation_id, ai_message, log_messages = manager.create_conversation(request)
         return InitConversationResponse(
             conversation_id=conversation_id,
-            ai_message=ai_message
+            ai_message=ai_message, 
+            log_messages=log_messages
         )
     except Exception as e:
         logger.error(f"Failed to initialize conversation: {e}")
@@ -234,31 +356,28 @@ async def init_conversation(request: InitConversationRequest):
 async def chat(request: ChatRequest):
     """Process a chat message"""
     try:
-        ai_message = manager.process_message(request.conversation_id, request.human_message)
-        return ChatResponse(ai_message=ai_message)
+        ai_message, accomplish, log_messages = manager.process_message(request.conversation_id, request.human_message)
+        return ChatResponse(
+            ai_message=ai_message,
+            accomplish=accomplish,
+            log_messages=log_messages
+        )
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e))
     except Exception as e:
         logger.error(f"Failed to process chat: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
+# this is for manually ending the conversation
 @app.post("/end_conversation", response_model=EndConversationResponse)
 async def end_conversation(request: EndConversationRequest):
     """End conversation and generate assessment"""
-    try:
-        background = {}
-        if request.patient_background_condition:
-            background["condition"] = request.patient_background_condition
-        if request.patient_background_diagnosis:
-            background["diagnosis"] = request.patient_background_diagnosis
-            
-        result = manager.end_conversation(request.conversation_id, background)
+    try:    
+        log_messages = manager.end_conversation(request.conversation_id, request.in_memory)
         
         return EndConversationResponse(
             conversation_id=request.conversation_id,
-            assessment=result["assessment"],
-            patient_condition=result["patient_condition"],
-            patient_diagnosis=result["patient_diagnosis"]
+            log_messages=log_messages
         )
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e))
@@ -266,69 +385,56 @@ async def end_conversation(request: EndConversationRequest):
         logger.error(f"Failed to end conversation: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@app.get("/download_assessment")
-async def download_assessment(conversation_id: str):
-    """Download assessment report"""
-    try:
-        if conversation_id not in manager.conversations:
-            raise HTTPException(status_code=404, detail="Conversation not found")
-            
-        assessment = manager.conversations[conversation_id].get("assessment")
-        if not assessment:
-            raise HTTPException(status_code=404, detail="Assessment not found")
-            
-        # Save assessment to file
-        assessment_dir = "assessments"
-        os.makedirs(assessment_dir, exist_ok=True)
-        
-        filepath = os.path.join(assessment_dir, f"{conversation_id}_assessment.json")
-        with open(filepath, "w", encoding='utf-8') as f:
-            json.dump(assessment, f, ensure_ascii=False, indent=4)
-            
-        return FileResponse(
-            path=filepath,
-            media_type="application/json",
-            filename=f"{conversation_id}_assessment.json"
-        )
-    except Exception as e:
-        logger.error(f"Failed to download assessment: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
-
-@app.post("/save_conversation")
+# manual save/load/list endpoints
+@app.post("/save_conversation", response_model=ConversationResponse)
 async def save_conversation(conversation_id: str):
     """Save conversation to disk"""
     try:
-        manager.save_conversation(conversation_id)
-        return {"message": "Conversation saved successfully"}
+        log_messages = manager.save_conversation(conversation_id, in_memory=True)  # save conversation request will maintain the conversation in memory
+        return ConversationResponse(
+            message="Conversation saved successfully",
+            log_messages=log_messages
+        )
     except Exception as e:
         logger.error(f"Failed to save conversation: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@app.post("/load_conversation")
+@app.post("/load_conversation", response_model=ConversationResponse)
 async def load_conversation(conversation_id: str):
     """Load conversation from disk"""
     try:
-        manager.load_conversation(conversation_id)
-        return {"message": "Conversation loaded successfully"}
+        log_messages = manager.load_conversation(conversation_id)
+        return ConversationResponse(
+            message="Conversation loaded successfully",
+            log_messages=log_messages
+        )
     except Exception as e:
         logger.error(f"Failed to load conversation: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@app.get("/list_conversations")
+@app.get("/list_conversations", response_model=ListConversationsResponse)
 async def list_conversations():
     """List all conversations"""
-    return manager.list_conversations()
+    try:
+        conversation_lists, log_messages = manager.list_conversations()
+        return ListConversationsResponse(
+            in_memory=conversation_lists["in_memory"],
+            on_disk=conversation_lists["on_disk"],
+            log_messages=log_messages
+        )
+    except Exception as e:
+        logger.error(f"Failed to list conversations: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
 
-@app.post("/update_language")
-async def update_language(language: str):
-    """Update system language"""
-    if language not in ["en", "zh"]:
-        raise HTTPException(status_code=400, detail="Language must be 'en' or 'zh'")
-        
-    config = ConfigManager()
-    config.update_language(language)
-    return {"message": f"Language updated to {language}"}
-
-if __name__ == "__main__":
-    import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+@app.post("/update_settings", response_model=SettingsUpdateResponse)
+async def update_settings(request: SettingsUpdateRequest):
+    """Update system settings"""
+    try:
+        log_messages = manager.update_settings(request.component, request.parameter, request.value)
+        return SettingsUpdateResponse(
+            message="Settings updated successfully",
+            log_messages=log_messages
+        )
+    except Exception as e:
+        logger.error(f"Failed to update settings: {e}")
+        raise HTTPException(status_code=500, detail=str(e))

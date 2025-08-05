@@ -3,7 +3,7 @@ import os
 from langchain.chat_models import init_chat_model
 from langchain_core.language_models import BaseChatModel
 from langchain.schema import AIMessage, BaseMessage, HumanMessage, SystemMessage
-from langchain_core.outputs import ChatGeneration, ChatResult
+from langchain_core.outputs import ChatGeneration, ChatResult, ChatGenerationChunk
 from langchain_core.callbacks.manager import CallbackManagerForLLMRun
 from openai import OpenAI
 from transformers import AutoTokenizer, AutoModelForCausalLM, pipeline, TextIteratorStreamer
@@ -76,12 +76,10 @@ class CustomChatModel(BaseChatModel):
             stop=stop,
         )
         
-        accumulated_text = ""
         for chunk in stream:
             if hasattr(chunk.choices[0], 'delta') and hasattr(chunk.choices[0].delta, 'content'):
                 content = chunk.choices[0].delta.content
                 if content:
-                    accumulated_text += content
                     if run_manager:
                         run_manager.on_llm_new_token(content)
                     yield content
@@ -93,7 +91,7 @@ class CustomChatModel(BaseChatModel):
         run_manager: Optional[CallbackManagerForLLMRun] = None,
         stream: bool = False,
         **kwargs
-    ) -> Union[ChatResult, Iterator[ChatResult]]:
+    ) -> ChatResult:
         if not stream:
             content = self._call(messages, stop=stop, **kwargs)
             generation = ChatGeneration(message=AIMessage(content=content))
@@ -103,16 +101,14 @@ class CustomChatModel(BaseChatModel):
                 
             return ChatResult(generations=[generation])
         else:
-            # For streaming mode, return an iterator that yields partial results
-            def generate_stream():
-                content_so_far = ""
-                for token in self._stream_response(messages, stop=stop, run_manager=run_manager, **kwargs):
-                    content_so_far += token
-                    yield ChatResult(generations=[
-                        ChatGeneration(message=AIMessage(content=content_so_far))
-                    ])
-            
-            return generate_stream()
+            # Instead of returning a generator, collect the entire response
+            content = ""
+            for token in self._stream_response(messages, stop=stop, run_manager=run_manager, **kwargs):
+                content += token
+                
+            # Return a complete ChatResult with the full content
+            generation = ChatGeneration(message=AIMessage(content=content))
+            return ChatResult(generations=[generation])
 
 
 class LocalChatModel(BaseChatModel):

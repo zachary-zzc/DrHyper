@@ -1,0 +1,6 @@
+[submodule "module"]
+	path = model
+	url = https://github.com/jeff-Tianfeng/dr_Hyper_Train_Eval.git
+[submodule "minRAG"]
+	path = minRAG
+	url = https://github.com/jeff-Tianfeng/MinRAG.git

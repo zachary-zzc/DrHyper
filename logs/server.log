@@ -1581,3 +1581,18 @@ EMPHASIZE: Focus solely on collecting the required entity information in this ph
 5. Use polite and professional language in 中文 to engage with the patient effectively.
 2025-08-05 22:20:58,689 - LongConversation - INFO - Conversation initialized, initial response length: 86
 2025-08-05 22:38:17,878 - APIServer - INFO - Created conversation directory: ./conversations
+2025-08-06 18:05:48,359 - APIServer - INFO - Creating new conversation with ID: adcf6784-61d8-4fb3-adf5-a0fed1a52c32
+2025-08-06 18:05:48,366 - APIServer - INFO - Initializing conversation with DrHyper model for Li Ming
+2025-08-06 18:05:48,370 - APIServer - INFO - Loading existing graphs
+2025-08-06 18:05:48,777 - APIServer - INFO - Initializing conversation...
+2025-08-06 18:06:08,067 - APIServer - INFO - Created conversation adcf6784-61d8-4fb3-adf5-a0fed1a52c32 with model DrHyper
+2025-08-06 18:06:08,079 - APIServer - INFO - Processing message in conversation adcf6784-61d8-4fb3-adf5-a0fed1a52c32
+2025-08-06 18:06:59,243 - APIServer - INFO - Processed message in conversation adcf6784-61d8-4fb3-adf5-a0fed1a52c32, accomplish status: False
+2025-08-06 18:06:59,264 - APIServer - INFO - Processing message in conversation adcf6784-61d8-4fb3-adf5-a0fed1a52c32
+2025-08-06 18:07:39,913 - APIServer - INFO - Processed message in conversation adcf6784-61d8-4fb3-adf5-a0fed1a52c32, accomplish status: False
+2025-08-06 18:07:39,929 - APIServer - INFO - Processing message in conversation adcf6784-61d8-4fb3-adf5-a0fed1a52c32
+2025-08-06 18:08:46,841 - APIServer - INFO - Processed message in conversation adcf6784-61d8-4fb3-adf5-a0fed1a52c32, accomplish status: False
+2025-08-06 18:08:46,854 - APIServer - INFO - Processing message in conversation adcf6784-61d8-4fb3-adf5-a0fed1a52c32
+2025-08-06 18:09:46,274 - APIServer - INFO - Processed message in conversation adcf6784-61d8-4fb3-adf5-a0fed1a52c32, accomplish status: False
+2025-08-06 18:09:46,295 - APIServer - INFO - Saved conversation adcf6784-61d8-4fb3-adf5-a0fed1a52c32 to disk
+2025-08-06 18:09:46,295 - APIServer - INFO - Ended conversation adcf6784-61d8-4fb3-adf5-a0fed1a52c32

@@ -52,9 +52,8 @@ class ConversationManager:
             "gender": request.gender
         }
         
-        # Build prompt
-        patient_str = prompts.get("PATIENT_INFO", 
-            name=request.name, age=request.age, gender=request.gender)
+        # Add patient info to prompt
+        patient_str = f"Patient information: Patient Name {request.name}, Age {request.age}, Gender {request.gender}"
         prompt = f"{target}\n{patient_str}"
         
         # Initialize conversation based on model type
